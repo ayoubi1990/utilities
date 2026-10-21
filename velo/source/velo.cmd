@@ -1,0 +1,3 @@
+@echo off
+rem Command-line downloads: velo.cmd [options] URL...
+java -jar "%~dp0velo.jar" --cli %*

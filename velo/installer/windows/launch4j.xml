@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Launch4j configuration for velo.exe (alternative to jpackage).
+  Prepare dist\launch4j first:   installer\windows\package.ps1 -Type launch4j
+  Then build the exe:            launch4jc installer\windows\launch4j.xml
+  Paths are relative to this file.
+-->
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>           <!-- embed velo.jar inside velo.exe -->
+  <headerType>gui</headerType>               <!-- no console window -->
+  <jar>../../dist/launch4j/velo.jar</jar>
+  <outfile>../../dist/launch4j/velo.exe</outfile>
+  <errTitle>velo</errTitle>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <icon>velo.ico</icon>
+  <manifest>velo.exe.manifest</manifest>     <!-- per-monitor DPI awareness, no admin prompt -->
+
+  <jre>
+    <!-- The private runtime made by jlink, shipped next to velo.exe; no system Java needed. -->
+    <path>runtime</path>
+    <requiresJdk>false</requiresJdk>
+    <requires64Bit>true</requires64Bit>
+    <minVersion>21</minVersion>
+    <opt>-Xmx512m</opt>
+    <opt>-Dflatlaf.useNativeLibrary=false</opt>
+  </jre>
+
+  <singleInstance>
+    <mutexName>dev.velo.desktop</mutexName>
+    <windowTitle>velo</windowTitle>
+  </singleInstance>
+
+  <versionInfo>
+    <fileVersion>0.1.0.0</fileVersion>
+    <txtFileVersion>0.1.0</txtFileVersion>
+    <fileDescription>velo download manager</fileDescription>
+    <copyright>Copyright (c) 2026 velo</copyright>
+    <productVersion>0.1.0.0</productVersion>
+    <txtProductVersion>0.1.0</txtProductVersion>
+    <productName>velo</productName>
+    <companyName>velo</companyName>
+    <internalName>velo</internalName>
+    <originalFilename>velo.exe</originalFilename>
+  </versionInfo>
+</launch4jConfig>

@@ -1,0 +1,30 @@
+velo includes or uses the following third-party software.
+
+------------------------------------------------------------------------
+FlatLaf 3.5.4 (bundled inside velo.jar)
+https://www.formdev.com/flatlaf/
+Copyright 2019 FormDev Software GmbH
+Licensed under the Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+Bundled in the "tools" folder of packaged builds. velo runs these as
+separate programs; their licence texts are in tools\licenses\ and the
+exact versions in tools\VERSIONS.txt.
+
+yt-dlp (https://github.com/yt-dlp/yt-dlp)
+  The Unlicense (public domain). The standalone yt-dlp.exe includes Python
+  and other components listed in yt-dlp-THIRD_PARTY_LICENSES.txt.
+
+FFmpeg (https://ffmpeg.org), LGPL "shared" build from
+https://github.com/BtbN/FFmpeg-Builds
+  GNU Lesser General Public License 2.1. Unmodified; the corresponding
+  source code is available from https://ffmpeg.org/download.html. The
+  FFmpeg DLLs may be replaced with any compatible build.
+
+Deno (https://deno.com)
+  MIT License.
+
+------------------------------------------------------------------------
+Icons are drawn with the "Segoe Fluent Icons" / "Segoe MDL2 Assets" fonts
+that ship with Windows; the fonts themselves are not redistributed.

@@ -1,0 +1,113 @@
+# velo: builds and tests on Windows and Linux, packages every installer, and on a
+# velo version tag (e.g. velo-v1.0.0) publishes them as a GitHub Release:
+#
+#   velo-<v>.exe, velo-<v>.msi                     Windows installers
+#   velo-<v>-windows-x64-portable.zip              Windows portable
+#   velo_<v>_amd64.deb, velo-<v>-1.x86_64.rpm       Linux packages
+#   velo-<v>-linux-x64-portable.tar.gz             Linux portable
+#   SHA256SUMS.txt
+#
+# Release:      git tag velo-v1.0.0 && git push origin velo-v1.0.0
+# Test build:   Actions tab > "velo" > Run workflow (files are kept as workflow artifacts)
+#
+# Tags are prefixed with the tool name so each utility in this repository has its own releases.
+name: velo
+
+on:
+  push:
+    tags: ['velo-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  VENDOR: velo
+  # Lets the tool-fetch scripts call the GitHub API without hitting the anonymous rate limit.
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: velo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Version from tag
+        shell: powershell
+        run: |
+          $v = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME -replace '^velo-v', '' } else { '0.0.1' }
+          "VERSION=$v" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+      - name: Build and test
+        shell: powershell
+        run: source\build.ps1 -Test
+      - name: Installers (.exe, .msi) and portable zip
+        shell: powershell
+        run: |
+          installer\windows\package.ps1 -Type exe -Version $env:VERSION -Vendor $env:VENDOR
+          installer\windows\package.ps1 -Type msi -Version $env:VERSION -Vendor $env:VENDOR
+          installer\portable\make-portable.ps1 -Version $env:VERSION -Vendor $env:VENDOR
+      - uses: actions/upload-artifact@v4
+        with:
+          name: velo-windows
+          path: |
+            velo/dist/*.exe
+            velo/dist/*.msi
+            velo/dist/*.zip
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: velo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Packaging tools (fakeroot for .deb, rpm for .rpm)
+        run: sudo apt-get update && sudo apt-get install -y fakeroot rpm
+      - name: Version from tag
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then v="${GITHUB_REF_NAME#velo-v}"; else v=0.0.1; fi
+          echo "VERSION=$v" >> "$GITHUB_ENV"
+      - name: Build and test
+        run: bash source/build.sh --test
+      - name: Packages (.deb, .rpm) and portable tar.gz
+        run: |
+          maint="${{ github.repository_owner }}@users.noreply.github.com"
+          bash installer/linux/package.sh --type deb --version "$VERSION" --vendor "$VENDOR" --maintainer "$maint"
+          bash installer/linux/package.sh --type rpm --version "$VERSION" --vendor "$VENDOR"
+          bash installer/portable/make-portable.sh --version "$VERSION" --vendor "$VENDOR"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: velo-linux
+          path: |
+            velo/dist/*.deb
+            velo/dist/*.rpm
+            velo/dist/*.tar.gz
+          if-no-files-found: error
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: velo ${{ github.ref_name }}
+          files: dist/*
+          generate_release_notes: true

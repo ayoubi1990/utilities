@@ -1,0 +1,17 @@
+# Build output
+/dist/
+/.cache/
+/source/out/
+/source/velo.jar
+
+# Built packages, wherever they end up (they are attached to GitHub Releases instead)
+*.msi
+*.exe
+*.deb
+*.rpm
+*.zip
+*.tar.gz
+
+# Unfinished downloads made while testing
+*.part
+*.velo
