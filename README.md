@@ -1,13 +1,30 @@
-# utilities
+<h1 align="center">utilities</h1>
 
-A collection of desktop utilities. Each one lives in its own folder with its own source, installers and README.
+<p align="center">Free desktop tools for Windows and Linux.</p>
 
-| Utility | What it is | Releases |
-|---|---|---|
-| [velo](velo/) | Fast, resumable, multi-connection download manager for Windows and Linux, with browser integration and video-site support | tags `velo-v*` on the [Releases](../../releases) page |
+---
 
-## Conventions
+<table>
+  <tr>
+    <td width="120" align="center"><img src="velo/installer/linux/velo.png" width="80" alt="velo"></td>
+    <td>
+      <h3><a href="velo/">velo</a> — download manager</h3>
+      Download files and videos faster over several connections at once, pause and resume anytime, and grab
+      videos from YouTube and 1000+ sites in the quality you choose.<br><br>
+      <a href="https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/velo-1.0.0.exe"><img src="https://img.shields.io/badge/Download%20for%20Windows-149%20MB-0078D6?style=for-the-badge" alt="Download for Windows"></a>
+      <a href="velo/#-other-downloads"><img src="https://img.shields.io/badge/Linux%20%26%20portable-more%20downloads-555555?style=for-the-badge" alt="Linux and portable downloads"></a>
+    </td>
+  </tr>
+</table>
 
-- **Folder layout:** `<tool>/source` for code, and `<tool>/installer/{windows,linux,portable}` for packaging.
-- **CI:** workflows live in `.github/workflows/<tool>.yml`, one per tool.
-- **Releases:** tag a release as `<tool>-v<version>`, for example `velo-v1.0.0`. The tool's workflow builds and publishes its packages.
+---
+
+<sub>
+
+**For contributors:**
+
+- Each tool lives in its own folder, as `<tool>/source` and `<tool>/installer/{windows,linux,portable}`.
+- Each tool has its own CI workflow, `.github/workflows/<tool>.yml`.
+- Releases are tagged `<tool>-v<version>`, for example `velo-v1.0.0`.
+
+</sub>

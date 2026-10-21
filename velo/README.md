@@ -1,138 +1,115 @@
-# velo
+<p align="center">
+  <img src="installer/linux/velo.png" width="96" alt="velo logo">
+</p>
 
-A fast, resumable, multi-connection download manager for Windows and Linux, with browser integration and video-site support.
+<h1 align="center">velo</h1>
 
-![Main window](docs/images/light-main.png)
+<p align="center">
+  <b>Download files and videos faster, and pick up where you left off.</b><br>
+  Free download manager for Windows and Linux.
+</p>
 
-## Features
+<p align="center">
+  <a href="https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/velo-1.0.0.exe"><img src="https://img.shields.io/badge/Download%20for%20Windows-149%20MB-0078D6?style=for-the-badge" alt="Download for Windows"></a>
+</p>
 
-- Up to 32 connections per file, re-split on the fly as connections finish
-- Pause and resume, including after closing the app or rebooting
-- Categories (Compressed, Documents, Music, Programs, Video, …), a queue, and a global speed limiter
-- A per-download progress window with a live connection map
-- A Chrome/Edge extension that adds a **Download this video** button and a right-click menu
-- YouTube, Vimeo and 1000+ other sites through [yt-dlp](https://github.com/yt-dlp/yt-dlp), with a quality picker
-- Light, dark and native themes; sharp on high-DPI screens
+<p align="center">
+  <sub>Version 1.0.0 · Windows 10 and 11 (64-bit) · <a href="#-other-downloads">Other downloads (Linux, portable)</a></sub>
+</p>
 
-## Repository layout
+<p align="center">
+  <img src="docs/images/light-main.png" alt="velo main window" width="860">
+</p>
 
-```
-source/              application source (Java 21), browser extension, build scripts
-installer/windows/   .exe / .msi installers (jpackage + WiX)
-installer/linux/     .deb / .rpm packages (jpackage)
-installer/portable/  portable .zip (Windows) and .tar.gz (Linux)
-docs/                packaging guide and screenshots
-```
+---
 
-## Download
+## ✨ What velo does
 
-Get the files from the **[Releases](../../../releases)** page (releases tagged `velo-v…`). Nothing else needs to be installed: Java, yt-dlp, ffmpeg and deno are all bundled.
+- 🚀 **Faster downloads.** Each file downloads over up to 32 connections at once.
+- ⏸️ **Pause and resume anytime.** Even after closing velo or restarting your PC.
+- 🎬 **Video downloads.** Save videos from YouTube, Vimeo and 1000+ other sites in the quality you choose, from 144p to 4K, or as audio only.
+- 🌐 **Works with your browser.** A **Download this video** button appears on videos in Chrome and Edge.
+- 🗂️ **Stays tidy.** Files are sorted into Video, Music, Documents, Programs and more.
+- 🌙 **Light and dark themes.** Sharp on high-resolution screens.
 
-| System | File | Install |
+## 💾 Install on Windows in 3 steps
+
+1. **[Download velo-1.0.0.exe](https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/velo-1.0.0.exe)** and open it.
+2. If Windows shows **"Windows protected your PC"**, click **More info**, then **Run anyway**. This appears because velo is new and not yet signed, not because something is wrong.
+3. Click **Next**, choose whether you want a desktop shortcut, then click **Install**. No admin rights are needed.
+
+Start velo from the **Start menu** or the desktop icon. Everything it needs is included, so there's nothing else to install.
+
+## 🎬 Download a video
+
+1. Open the video page in your browser and copy its address.
+2. In velo, press **Ctrl+V** (or click **Add URL** and paste).
+3. Pick a quality and click **Start Download**.
+
+<p align="center">
+  <img src="docs/images/video-quality.png" alt="Choose a video quality" width="640">
+</p>
+
+## 🌐 Add the browser button (optional)
+
+With the browser button, you can download a video straight from the page.
+
+1. In Chrome or Edge, open `chrome://extensions` (or `edge://extensions`).
+2. Turn on **Developer mode** (top right).
+3. Click **Load unpacked** and choose this folder: `%LOCALAPPDATA%\velo\extension`. Paste that path into the folder box and press Enter.
+
+Now hover over a video and click **Download this video**, or right-click any link and choose **Download with velo**. velo must be running, and it always asks before downloading anything.
+
+## 📦 Other downloads
+
+| I use… | Download | How to install |
 |---|---|---|
-| Windows 10/11 x64 | `velo-<v>.exe` or `.msi` | Run it. No admin rights needed. It adds a Start menu entry and an optional desktop shortcut. |
-| Windows, no install | `velo-<v>-windows-x64-portable.zip` | Unzip anywhere and run `velo\velo.exe`. |
-| Debian / Ubuntu | `velo_<v>_amd64.deb` | `sudo apt install ./velo_<v>_amd64.deb` |
-| Fedora / RHEL / openSUSE | `velo-<v>-1.x86_64.rpm` | `sudo dnf install ./velo-<v>-1.x86_64.rpm` |
-| Linux, no install | `velo-<v>-linux-x64-portable.tar.gz` | `tar xzf` it anywhere and run `velo/bin/velo`. |
+| Windows (company PC, IT deployment) | [velo-1.0.0.msi](https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/velo-1.0.0.msi) · 149 MB | Double-click it. Silent install: `msiexec /i velo-1.0.0.msi /qn` |
+| Windows, without installing | [Portable .zip](https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/velo-1.0.0-windows-x64-portable.zip) · 148 MB | Unzip anywhere, then open `velo\velo.exe` |
+| Ubuntu, Debian, Mint | [velo_1.0.0_amd64.deb](https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/velo_1.0.0_amd64.deb) · 186 MB | Double-click it, or run `sudo apt install ./velo_1.0.0_amd64.deb` |
+| Fedora, RHEL, openSUSE | [velo-1.0.0-1.x86_64.rpm](https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/velo-1.0.0-1.x86_64.rpm) · 222 MB | `sudo dnf install ./velo-1.0.0-1.x86_64.rpm` |
+| Linux, without installing | [Portable .tar.gz](https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/velo-1.0.0-linux-x64-portable.tar.gz) · 223 MB | Extract it, then run `velo/bin/velo` |
 
-`SHA256SUMS.txt` on each release lists every file's checksum.
+To check that a download isn't corrupted, compare its fingerprint with the matching line in [SHA256SUMS.txt](https://github.com/ayoubi1990/utilities/releases/download/velo-v1.0.0/SHA256SUMS.txt). Older versions are on the [releases page](https://github.com/ayoubi1990/utilities/releases).
 
-**Windows notes:**
+## ❓ Questions
 
-- Unsigned builds trigger SmartScreen. Click **More info**, then **Run anyway**.
-- **Upgrade:** run the newer installer.
-- **Uninstall:** **Settings > Apps > velo**.
-- **Silent install:** `msiexec /i velo-<v>.msi /qn`
+<details>
+<summary><b>Is velo free?</b></summary>
 
-**Linux notes:**
+Yes. There are no ads, no accounts and no time limits.
+</details>
 
-- The packages install to `/opt/velo` and add a menu entry. The command-line tool is `/opt/velo/bin/velo-cli`.
-- **Uninstall:** `sudo apt remove velo` or `sudo dnf remove velo`.
+<details>
+<summary><b>Is it safe? Why does Windows warn me?</b></summary>
 
-## Browser extension
+Windows warns about any new app that isn't signed with a paid certificate yet. velo doesn't collect or send any of your data. The browser button only talks to velo on your own computer. Company PCs may block unsigned apps entirely; in that case, ask your IT department.
+</details>
 
-1. Open `chrome://extensions` (or `edge://extensions`).
-2. Turn on **Developer mode**.
-3. Click **Load unpacked** and select velo's `extension` folder:
-   - Windows installer: `%LOCALAPPDATA%\velo\extension`
-   - Linux packages: `/opt/velo/lib/extension`
-   - Portable builds: the `extension` folder inside the unpacked package.
+<details>
+<summary><b>Where do my downloads go?</b></summary>
 
-Keep velo running. Then:
+Into your **Downloads** folder, sorted into sub-folders such as `Video`, `Music` and `Programs`. To change the folder, use **Downloads → Options**. To find a file, right-click it in velo and choose **Open folder**.
+</details>
 
-- Hover over a video and click **Download this video**.
-- Or right-click a link and choose **Download with velo**.
+<details>
+<summary><b>A video site stopped working. What can I do?</b></summary>
 
-Every link is confirmed in velo before anything downloads.
+Video sites change often. Use **Help → Update video support**, then try again. Protected streaming services (Netflix, Disney+ and similar) aren't supported.
+</details>
 
-## Video sites (YouTube, Vimeo, …)
+<details>
+<summary><b>How do I uninstall velo?</b></summary>
 
-Click the video button on the page, or use **Tasks > Add video page…**. Then pick a quality and click **Start Download**.
+- **Windows:** open **Settings → Apps → velo → Uninstall**.
+- **Linux:** run `sudo apt remove velo` (or `sudo dnf remove velo`).
 
-![Video quality picker](docs/images/video-quality.png)
+Your download list stays in `%APPDATA%\velo` (Windows) or `~/.local/share/velo` (Linux). Delete that folder too if you want to remove everything.
+</details>
 
-If a site stops working, use **Help > Update video support** to update yt-dlp. **Downloads > Options** shows which tools velo is using.
+---
 
-## Usage
-
-| Action | How |
-|---|---|
-| Add a download | **Add URL**, or copy a link and press **Ctrl+V** |
-| Pause / resume | **Stop** / **Resume** in the toolbar |
-| Progress window | double-click an unfinished download |
-| Open a finished file | double-click it, or press **Enter** |
-| Delete | **Del** (optionally deletes the file too) |
-| Speed limit, connections, folders | **Downloads > Options** |
-| Theme | **View > Light / Dark / native look** |
-| Command line | `velo-cli -o ~/Downloads -c 8 https://example.com/file.iso` |
-
-![Download progress](docs/images/light-progress.png)
-
-| Item | Windows | Linux |
-|---|---|---|
-| Download list and settings | `%APPDATA%\velo\downloads.properties` | `~/.local/share/velo/downloads.properties` |
-| Updated yt-dlp | `%APPDATA%\velo\tools` | `~/.local/share/velo/tools` |
-| Downloaded files | `%USERPROFILE%\Downloads\<Category>` | `~/Downloads/<Category>` |
-| Unfinished downloads | `<file>.part` + `<file>.velo` | same |
-
-## Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| Browser button says "velo is not running" | Start velo. The status bar must show *Browser integration on (127.0.0.1:47321)*. |
-| "Video support is not available" | The `tools` folder is missing or blocked by antivirus or company policy. Reinstall, or allow `tools\*.exe`. |
-| A video site fails or finds no formats | **Help > Update video support** |
-| velo is blocked on a company PC | Application-control policy blocks unsigned apps; ask IT, or use a signed release. |
-
-## Build from source
-
-Requires JDK 21+.
-
-| | Windows (PowerShell) | Linux (bash) |
-|---|---|---|
-| Build + test | `source\build.ps1 -Test` | `bash source/build.sh --test` |
-| Run | `source\velo-ui.cmd` | `java -jar source/velo.jar` |
-| Installer | `installer\windows\package.ps1 -Type exe -Version 1.0.0` (or `-Type msi`) | `bash installer/linux/package.sh --type deb --version 1.0.0` (or `rpm`) |
-| Portable | `installer\portable\make-portable.ps1 -Version 1.0.0` | `bash installer/portable/make-portable.sh --version 1.0.0` |
-
-Everything is written to `dist/`.
-
-**Build tools:**
-
-- The scripts download yt-dlp, ffmpeg (LGPL) and deno from their official GitHub releases and check them against the publishers' SHA-256 checksums. Add `-NoVideoTools` / `--no-video-tools` to build without them.
-- Windows installers need WiX 3.14. If it isn't installed, `installer\windows\fetch-wix.ps1` downloads a checksum-pinned copy.
-- Linux packages need `fakeroot` (for `.deb`) or `rpm` (for `.rpm`).
-
-**Release:** push a `velo-v` version tag and GitHub Actions (`.github/workflows/velo.yml` at the repository root) builds, tests and publishes every package:
-
-```bash
-git tag velo-v1.0.0
-git push origin velo-v1.0.0
-```
-
-Signing and other packaging details: [docs/PACKAGING.md](docs/PACKAGING.md).
-
-## License notes
-
-Third-party components are listed in [source/THIRD-PARTY-NOTICES.txt](source/THIRD-PARTY-NOTICES.txt). DRM-protected services are not supported. Only download content you have the right to download.
+<p align="center">
+  <sub>For developers: <a href="docs/DEVELOPERS.md">building from source and releasing</a> · <a href="docs/PACKAGING.md">packaging guide</a> · <a href="source/THIRD-PARTY-NOTICES.txt">third-party notices</a><br>
+  Please only download content you have the right to download.</sub>
+</p>
