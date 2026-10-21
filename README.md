@@ -19,12 +19,20 @@
 
 ---
 
-<sub>
+## 🛠️ For contributors
 
-**For contributors:**
+Every tool follows the same layout, so adding a new one is predictable.
 
-- Each tool lives in its own folder, as `<tool>/source` and `<tool>/installer/{windows,linux,portable}`.
-- Each tool has its own CI workflow, `.github/workflows/<tool>.yml`.
-- Releases are tagged `<tool>-v<version>`, for example `velo-v1.0.0`.
+| What | Where |
+|---|---|
+| Source code | `<tool>/source/` |
+| Installers | `<tool>/installer/windows/`, `<tool>/installer/linux/`, `<tool>/installer/portable/` |
+| Build and release automation | `.github/workflows/<tool>.yml` |
+| Developer guide | `<tool>/docs/DEVELOPERS.md` (for example [velo's](velo/docs/DEVELOPERS.md)) |
 
-</sub>
+**To publish a new version,** push a tag named `<tool>-v<version>`. GitHub then builds, tests and publishes that tool's downloads:
+
+```bash
+git tag velo-v1.1.0
+git push origin velo-v1.1.0
+```

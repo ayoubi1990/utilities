@@ -109,7 +109,10 @@ Your download list stays in `%APPDATA%\velo` (Windows) or `~/.local/share/velo` 
 
 ---
 
-<p align="center">
-  <sub>For developers: <a href="docs/DEVELOPERS.md">building from source and releasing</a> · <a href="docs/PACKAGING.md">packaging guide</a> · <a href="source/THIRD-PARTY-NOTICES.txt">third-party notices</a><br>
-  Please only download content you have the right to download.</sub>
-</p>
+## 🛠️ For developers
+
+- [Building from source and releasing](docs/DEVELOPERS.md)
+- [Packaging guide](docs/PACKAGING.md)
+- [Third-party notices](source/THIRD-PARTY-NOTICES.txt)
+
+Please only download content you have the right to download.
