@@ -33,6 +33,7 @@ final class SegmentedJob {
     private final RateLimiter limiter;
     private final URI uri;
     private final Map<String, String> headers;
+    private final RequestBody body;
     private final int connections;
     private final int maxRetries;
     private final SegmentTable table;
@@ -46,6 +47,7 @@ final class SegmentedJob {
         this.limiter = limiter;
         this.uri = uri;
         this.headers = opts.headers();
+        this.body = opts.body();
         this.connections = Math.max(1, opts.connections());
         this.maxRetries = opts.maxRetries();
         this.table = table;
@@ -200,7 +202,7 @@ final class SegmentedJob {
         }
         Http.Exchange resp;
         try {
-            resp = Http.get(uri, headers, "bytes=" + from + "-" + (to - 1), canceller);
+            resp = Http.send(uri, headers, body, "bytes=" + from + "-" + (to - 1), canceller);
         } catch (IOException e) {
             throw canceller.isCancelled() ? VeloException.cancelled() : VeloException.network(e);
         }

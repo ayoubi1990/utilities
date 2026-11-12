@@ -17,10 +17,10 @@ final class Probe {
 
     private Probe() {}
 
-    static Info run(URI uri, Map<String, String> headers) throws VeloException {
+    static Info run(URI uri, Map<String, String> headers, RequestBody body) throws VeloException {
         Http.Exchange resp;
         try {
-            resp = Http.get(uri, headers, "bytes=0-0", null);
+            resp = Http.send(uri, headers, body, "bytes=0-0", null);
         } catch (IOException e) {
             throw VeloException.network(e);
         }

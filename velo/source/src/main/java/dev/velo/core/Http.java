@@ -28,6 +28,15 @@ final class Http {
      * HttpURLConnection refuses to do on its own).
      */
     static Exchange get(URI uri, Map<String, String> headers, String range, Canceller canceller) throws IOException {
+        return send(uri, headers, null, range, canceller);
+    }
+
+    /**
+     * Sends the request, with {@code body}'s method and bytes when given (a POST download), else
+     * a GET. As browsers do, a 301/302/303 redirect turns it into a plain GET; 307/308 keep it.
+     */
+    static Exchange send(URI uri, Map<String, String> headers, RequestBody body, String range, Canceller canceller)
+            throws IOException {
         URI current = uri;
         for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
             HttpURLConnection c = (HttpURLConnection) current.toURL().openConnection();
@@ -46,6 +55,9 @@ final class Http {
             }
             int status;
             try {
+                if (body != null) {
+                    writeBody(c, body);
+                }
                 status = c.getResponseCode();
             } catch (IOException e) {
                 abort(c, canceller);
@@ -54,6 +66,9 @@ final class Http {
             String location = c.getHeaderField("Location");
             if (isRedirect(status) && location != null) {
                 abort(c, canceller);
+                if (status == 301 || status == 302 || status == 303) {
+                    body = null;
+                }
                 try {
                     current = current.resolve(location.trim());
                 } catch (IllegalArgumentException e) {
@@ -64,6 +79,21 @@ final class Http {
             return new Exchange(c, status, current, canceller);
         }
         throw new IOException("too many redirects");
+    }
+
+    private static void writeBody(HttpURLConnection c, RequestBody body) throws IOException {
+        c.setRequestMethod(body.method().toUpperCase(java.util.Locale.ROOT));
+        if (body.data() == null) {
+            return;
+        }
+        if (body.contentType() != null) {
+            c.setRequestProperty("Content-Type", body.contentType());
+        }
+        c.setDoOutput(true);
+        c.setFixedLengthStreamingMode(body.data().length);
+        try (java.io.OutputStream out = c.getOutputStream()) {
+            out.write(body.data());
+        }
     }
 
     private static boolean isRedirect(int status) {

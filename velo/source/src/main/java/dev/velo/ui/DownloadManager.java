@@ -35,7 +35,12 @@ import java.util.function.Consumer;
 final class DownloadManager {
     /** What the user asked for in the Download File Info dialog. */
     record Request(String url, Path dir, String fileName, int connections, boolean start, String description,
-            Map<String, String> headers) {}
+            Map<String, String> headers, dev.velo.core.RequestBody body) {
+        /** The same request, sent with the browser's method and body (a POST download). */
+        Request withBody(dev.velo.core.RequestBody b) {
+            return new Request(url, dir, fileName, connections, start, description, headers, b);
+        }
+    }
 
     /** A video page to fetch with yt-dlp, with the quality the user picked. */
     record MediaRequest(String pageUrl, Path dir, String title, String ext, String selector, String label,
@@ -115,6 +120,7 @@ final class DownloadManager {
         DownloadItem item = new DownloadItem(nextId.getAndIncrement(), r.url(), r.dir(), r.connections(),
                 System.currentTimeMillis(), r.start() ? DownloadItem.Status.QUEUED : DownloadItem.Status.PAUSED,
                 r.description(), r.headers());
+        item.requestBody = r.body();
         if (r.fileName() != null && !r.fileName().isBlank()) {
             item.path = r.dir().resolve(r.fileName());
             item.name = r.fileName();
@@ -305,7 +311,8 @@ final class DownloadManager {
             Destination dest = item.path != null ? Destination.file(item.path) : Destination.dir(item.dir);
             Download d = engine.start(item.url, dest, DownloadOptions.defaults()
                     .withConnections(item.connections)
-                    .withHeaders(item.headers));
+                    .withHeaders(item.headers)
+                    .withBody(item.requestBody));
             item.handle = d;
             item.path = d.path();
             item.name = d.path().getFileName().toString();

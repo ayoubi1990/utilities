@@ -34,7 +34,7 @@ public final class Engine {
      */
     public Download start(String url, Destination dest, DownloadOptions opts) throws VeloException {
         URI uri = parse(url);
-        Probe.Info info = Probe.run(uri, opts.headers());
+        Probe.Info info = Probe.run(uri, opts.headers(), opts.body());
 
         Path preferred;
         boolean explicit;
@@ -60,7 +60,7 @@ public final class Engine {
 
         if (!info.ranges()) {
             Path path = explicit ? preferred : uniquePath(preferred);
-            SingleJob job = new SingleJob(limiter, info.finalUri(), opts.headers(), info.body(), path);
+            SingleJob job = new SingleJob(limiter, info.finalUri(), opts.headers(), opts.body(), info.body(), path);
             Download download = new Download(path, info.total(), false, 0, job::cancel);
             launch(download, () -> job.run(download));
             return download;

@@ -76,7 +76,7 @@ chrome.tabs.onRemoved.addListener(clearMedia);
 // ---- hand-off to the desktop app ----
 
 /** mode "page": url is a video page for velo's yt-dlp support rather than a file. */
-async function sendToVelo(url, pageUrl, title, fileName, mode) {
+async function sendToVelo(url, pageUrl, title, fileName, mode, post) {
   let cookie = "";
   try {
     const cookies = await chrome.cookies.getAll({ url });
@@ -92,6 +92,9 @@ async function sendToVelo(url, pageUrl, title, fileName, mode) {
     title: title || "",
     fileName: fileName || null,
     mode: mode || "file",
+    method: post ? post.method : null,
+    bodyBase64: post ? post.bodyBase64 : null,
+    contentType: post ? post.contentType : null,
   };
   try {
     const res = await fetch(`${VELO}/download`, {
@@ -104,6 +107,73 @@ async function sendToVelo(url, pageUrl, title, fileName, mode) {
   } catch (e) {
     return { ok: false, error: NOT_RUNNING };
   }
+}
+
+// ---- remember POSTed requests, so a download a form started can be repeated by velo ----
+// e.g. SharePoint/OneDrive "Download" on a folder POSTs the file list and a token to a zip
+// service; fetching that address with a plain GET fails with HTTP 405.
+
+const POST_TTL_MS = 2 * 60 * 1000;
+const posts = new Map(); // url -> { method, bodyBase64, contentType, at }
+
+function toBase64(bytes) {
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+
+function prunePosts() {
+  const now = Date.now();
+  for (const [url, p] of posts) if (now - p.at > POST_TTL_MS) posts.delete(url);
+  while (posts.size > 50) posts.delete(posts.keys().next().value);
+}
+
+chrome.webRequest.onBeforeRequest.addListener(
+  (d) => {
+    if (d.method === "GET" || d.method === "HEAD" || d.tabId < 0) return;
+    const entry = { method: d.method, bodyBase64: null, contentType: null, at: Date.now() };
+    const body = d.requestBody;
+    if (body && body.formData) {
+      // A submitted form: send its fields again, URL-encoded.
+      const form = new URLSearchParams();
+      for (const [key, values] of Object.entries(body.formData)) for (const v of values) form.append(key, v);
+      entry.bodyBase64 = btoa(form.toString());
+      entry.contentType = "application/x-www-form-urlencoded";
+    } else if (body && body.raw) {
+      const parts = body.raw.filter((r) => r.bytes).map((r) => new Uint8Array(r.bytes));
+      const all = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+      let at = 0;
+      for (const p of parts) (all.set(p, at), (at += p.length));
+      entry.bodyBase64 = toBase64(all);
+    }
+    posts.set(d.url, entry);
+    prunePosts();
+  },
+  { urls: ["<all_urls>"], types: ["main_frame", "sub_frame", "xmlhttprequest", "other"] },
+  ["requestBody"]
+);
+
+// A raw body's Content-Type is only known from the request headers.
+chrome.webRequest.onBeforeSendHeaders.addListener(
+  (d) => {
+    const entry = posts.get(d.url);
+    if (!entry || entry.contentType) return;
+    const h = (d.requestHeaders || []).find((x) => x.name.toLowerCase() === "content-type");
+    if (h) entry.contentType = h.value;
+  },
+  { urls: ["<all_urls>"], types: ["main_frame", "sub_frame", "xmlhttprequest", "other"] },
+  ["requestHeaders"]
+);
+
+/** The method and body to repeat for a download, and the address to send them to. */
+function postFor(item) {
+  for (const url of [item.finalUrl, item.url]) {
+    const p = url && posts.get(url);
+    if (p && Date.now() - p.at <= POST_TTL_MS) {
+      return { url, method: p.method, bodyBase64: p.bodyBase64, contentType: p.contentType };
+    }
+  }
+  return null;
 }
 
 // ---- take over the browser's own downloads (like IDM) ----
@@ -136,7 +206,9 @@ async function takeOver(item) {
   if (size > 0 && size < s.minSizeMB * 1024 * 1024) return false;
   if (!(await veloRunning())) return false;
   const name = item.filename ? item.filename.split(/[\\/]/).pop() : null;
-  const result = await sendToVelo(url, item.referrer || "", "", name, "file");
+  // A download a POSTed form started is repeated as that POST (sent to the address it went to).
+  const post = postFor(item);
+  const result = await sendToVelo(post ? post.url : url, item.referrer || "", "", name, "file", post);
   if (!result.ok) return false;
   try {
     await chrome.downloads.cancel(item.id);

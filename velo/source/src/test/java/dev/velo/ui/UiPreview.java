@@ -67,7 +67,7 @@ public final class UiPreview {
     }
 
     private static DownloadItem add(DownloadManager m, String url, Path dir, boolean start, String description) {
-        return m.add(new DownloadManager.Request(url, dir, null, 8, start, description, Map.of()));
+        return m.add(new DownloadManager.Request(url, dir, null, 8, start, description, Map.of(), null));
     }
 
     /** Paints the whole window, including its menu bar, at the screen's scale. */

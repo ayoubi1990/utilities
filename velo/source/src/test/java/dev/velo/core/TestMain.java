@@ -186,6 +186,23 @@ public final class TestMain {
                 check(Arrays.equals(Files.readAllBytes(saved), server.payload), "content matches");
             }
         });
+        test("downloads a form started are repeated as that POST", () -> {
+            try (TestServer server = new TestServer(2 * 1024 * 1024); TempDir dir = new TempDir()) {
+                String form = "files=%5B%22a.pdf%22%5D&token=abc";
+                server.requiredPostBody = form;
+                try {
+                    finish(engine.start(server.url("/zip.zip"), Destination.dir(dir.path), small));
+                    check(false, "a plain GET should be refused");
+                } catch (VeloException e) {
+                    check(e.getMessage().contains("405"), "GET gets 405: " + e.getMessage());
+                }
+                RequestBody post = new RequestBody("POST", form.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                        "application/x-www-form-urlencoded");
+                Path saved = finish(engine.start(server.url("/zip.zip"), Destination.dir(dir.path),
+                        small.withConnections(4).withBody(post)));
+                check(Arrays.equals(Files.readAllBytes(saved), server.payload), "content matches");
+            }
+        });
         test("dropped connections are retried", () -> {
             try (TestServer server = new TestServer(3 * 1024 * 1024); TempDir dir = new TempDir()) {
                 server.dropsLeft.set(4);

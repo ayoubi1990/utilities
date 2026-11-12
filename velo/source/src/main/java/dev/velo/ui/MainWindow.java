@@ -435,7 +435,14 @@ final class MainWindow extends JFrame {
 
     /** Opens Download File Info, then adds the download and (optionally) its progress window. */
     void confirmAndAdd(String url, String fileName, String description, Map<String, String> headers) {
-        DownloadInfoDialog.show(this, manager, url, fileName, description, headers).ifPresent(req -> {
+        confirmAndAdd(url, fileName, description, headers, null);
+    }
+
+    /** As above, for a download the browser made with a method and body (e.g. a POSTed form). */
+    void confirmAndAdd(String url, String fileName, String description, Map<String, String> headers,
+            dev.velo.core.RequestBody body) {
+        DownloadInfoDialog.show(this, manager, url, fileName, description, headers).ifPresent(chosen -> {
+            DownloadManager.Request req = chosen.withBody(body);
             DownloadItem item = manager.add(req);
             reload();
             select(item);
@@ -465,7 +472,7 @@ final class MainWindow extends JFrame {
             addMedia(r.url(), headers);
             return;
         }
-        confirmAndAdd(r.url(), r.fileName(), r.title() == null ? "" : r.title(), headers);
+        confirmAndAdd(r.url(), r.fileName(), r.title() == null ? "" : r.title(), headers, r.requestBody());
     }
 
     private void showProgress(DownloadItem item) {

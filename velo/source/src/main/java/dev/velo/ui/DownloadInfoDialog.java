@@ -183,7 +183,7 @@ final class DownloadInfoDialog extends JDialog {
             }
         }
         result = new DownloadManager.Request(links.get(0), target.getParent(), letServerName ? null : name,
-                manager.defaultConnections(), startNow, description.getText().trim(), headers);
+                manager.defaultConnections(), startNow, description.getText().trim(), headers, null);
         dispose();
     }
 }

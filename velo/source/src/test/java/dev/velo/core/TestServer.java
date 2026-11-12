@@ -28,6 +28,8 @@ public final class TestServer implements AutoCloseable {
     /** This many large responses are cut off after 64 KiB. */
     final AtomicInteger dropsLeft = new AtomicInteger();
     final AtomicInteger requests = new AtomicInteger();
+    /** When set, every request must be a POST with exactly this body, or it gets 405. */
+    volatile String requiredPostBody;
 
     private final ServerSocket server;
 
@@ -72,6 +74,16 @@ public final class TestServer implements AutoCloseable {
             requests.incrementAndGet();
             String path = requestLine.split(" ")[1];
             OutputStream os = socket.getOutputStream();
+            String need = requiredPostBody;
+            if (need != null) {
+                // Like SharePoint's zip service: only a POST carrying the form is served.
+                char[] got = new char[Integer.parseInt(headers.getOrDefault("content-length", "0"))];
+                for (int at = 0, n; at < got.length && (n = r.read(got, at, got.length - at)) > 0; at += n) { }
+                if (!requestLine.startsWith("POST ") || !need.equals(new String(got))) {
+                    write(os, "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+                    return;
+                }
+            }
             if (path.startsWith("/redirect/")) {
                 write(os, "HTTP/1.1 302 Found\r\nLocation: /" + path.substring(10)
                         + "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");

@@ -22,11 +22,14 @@ final class SingleJob {
     private final RateLimiter limiter;
     private final URI uri;
     private final Map<String, String> headers;
+    private final RequestBody body;
     private final Http.Exchange probeResponse;
     private final Path path;
     private final Http.Canceller canceller = new Http.Canceller();
 
-    SingleJob(RateLimiter limiter, URI uri, Map<String, String> headers, Http.Exchange probeResponse, Path path) {
+    SingleJob(RateLimiter limiter, URI uri, Map<String, String> headers, RequestBody body, Http.Exchange probeResponse,
+            Path path) {
+        this.body = body;
         this.limiter = limiter;
         this.uri = uri;
         this.headers = headers;
@@ -98,7 +101,7 @@ final class SingleJob {
 
     private Http.Exchange open() throws VeloException {
         try {
-            return Http.get(uri, headers, null, canceller);
+            return Http.send(uri, headers, body, null, canceller);
         } catch (IOException e) {
             throw canceller.isCancelled() ? VeloException.cancelled() : VeloException.network(e);
         }

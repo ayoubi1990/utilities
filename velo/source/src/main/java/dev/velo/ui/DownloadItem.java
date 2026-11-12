@@ -98,6 +98,8 @@ final class DownloadItem {
     // Owned by DownloadManager.
     volatile Download handle;
     volatile dev.velo.media.MediaJob media;
+    /** A POST download's method and body; kept in memory only, as it can hold an access token. */
+    volatile dev.velo.core.RequestBody requestBody;
     volatile boolean pauseRequested;
     volatile boolean removed;
     volatile boolean deleteFiles;

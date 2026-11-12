@@ -27,13 +27,28 @@ import java.util.function.Consumer;
 final class BrowserBridge implements AutoCloseable {
     static final int DEFAULT_PORT = 47321;
     private static final int MAX_HEADER_BYTES = 16 * 1024;
-    private static final int MAX_BODY_BYTES = 64 * 1024;
+    /** Room for a POSTed form's body (a SharePoint folder download lists every file in it). */
+    private static final int MAX_BODY_BYTES = 8 * 1024 * 1024;
 
-    /** @param mode "page" when the link is a video page for yt-dlp; anything else means a file */
+    /**
+     * @param mode        "page" when the link is a video page for yt-dlp; anything else means a file
+     * @param method      the method the browser used, when not GET (e.g. "POST")
+     * @param bodyBase64  the request body the browser sent, base64-encoded, when there was one
+     * @param contentType that body's Content-Type
+     */
     record Request(String url, String referrer, String cookie, String userAgent, String title, String fileName,
-            String mode) {
+            String mode, String method, String bodyBase64, String contentType) {
         boolean isPage() {
             return "page".equals(mode);
+        }
+
+        /** The browser's method and body to repeat, or null for a plain GET. */
+        dev.velo.core.RequestBody requestBody() {
+            if (method == null || method.isBlank() || method.equalsIgnoreCase("GET")) {
+                return null;
+            }
+            byte[] data = bodyBase64 == null || bodyBase64.isEmpty() ? null : java.util.Base64.getDecoder().decode(bodyBase64);
+            return new dev.velo.core.RequestBody(method, data, contentType);
         }
     }
 
@@ -203,8 +218,22 @@ final class BrowserBridge implements AutoCloseable {
         if (url == null || !(url.startsWith("http://") || url.startsWith("https://")) || url.length() > 8192) {
             return null;
         }
+        String bodyBase64 = m.get("bodyBase64");
+        if (bodyBase64 != null && !validBase64(bodyBase64)) {
+            return null;
+        }
         return new Request(url, m.get("referrer"), m.get("cookie"), m.get("userAgent"), m.get("title"),
-                m.get("fileName"), m.get("mode"));
+                m.get("fileName"), m.get("mode"), m.get("method"), m.get("bodyBase64"), m.get("contentType"));
+    }
+
+    /** Whether a base64 body decodes; a bad one makes the whole request bad. */
+    private static boolean validBase64(String s) {
+        try {
+            java.util.Base64.getDecoder().decode(s);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private static String readHead(InputStream in) throws IOException {
