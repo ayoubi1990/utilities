@@ -52,7 +52,16 @@ final class OptionsDialog extends JDialog {
         JCheckBox progress = new JCheckBox("Show download progress window when a download starts",
                 manager.showProgress());
         JCheckBox complete = new JCheckBox("Show download complete dialog", manager.showComplete());
+        boolean startupWas = Startup.isEnabled();
+        JCheckBox startup = new JCheckBox("Start velo when I sign in (runs in the background)", startupWas);
+        startup.setEnabled(Startup.isSupported());
+        if (!Startup.isSupported()) {
+            startup.setToolTipText("Available in the installed app");
+        }
+        JCheckBox tray = new JCheckBox("Keep velo running in the tray when I close its window", manager.closeToTray());
         Dialogs.Form general = new Dialogs.Form();
+        general.wide(startup);
+        general.wide(tray);
         general.wide(progress);
         general.wide(complete);
         general.wide(new JLabel(" "));
@@ -77,6 +86,15 @@ final class OptionsDialog extends JDialog {
             manager.setSpeedLimit(((Integer) limit.getValue()) * 1024L);
             manager.setShowProgress(progress.isSelected());
             manager.setShowComplete(complete.isSelected());
+            manager.setCloseToTray(tray.isSelected());
+            if (startup.isSelected() != startupWas) {
+                try {
+                    Startup.setEnabled(startup.isSelected());
+                } catch (java.io.IOException ex) {
+                    javax.swing.JOptionPane.showMessageDialog(this, "Could not change the startup setting:\n"
+                            + ex.getMessage(), "velo", javax.swing.JOptionPane.WARNING_MESSAGE);
+                }
+            }
             dispose();
         });
         cancel.addActionListener(e -> dispose());

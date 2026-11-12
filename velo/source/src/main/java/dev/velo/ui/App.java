@@ -11,6 +11,12 @@ import javax.swing.SwingUtilities;
 
 /** Desktop entry point: velo-ui [URL...] */
 public final class App {
+    /**
+     * Held for the life of the process. A local in main() would be garbage-collected after
+     * main() returns, closing the file and releasing the lock, and a second velo could start.
+     */
+    private static SingleInstance instanceLock;
+
     private App() {}
 
     public static void main(String[] args) {
@@ -25,6 +31,10 @@ public final class App {
         System.setProperty("sun.awt.useSystemAAFontSettings", "on");
         Path store = DownloadManager.defaultStore();
 
+        // --background (used when velo starts with the system): no window, just the tray icon.
+        boolean background = List.of(args).contains(Startup.BACKGROUND);
+        String[] urls = java.util.Arrays.stream(args).filter(a -> !a.equals(Startup.BACKGROUND)).toArray(String[]::new);
+
         // One velo per user: a second copy would overwrite the first one's download list.
         SingleInstance instance;
         try {
@@ -32,8 +42,13 @@ public final class App {
         } catch (IOException e) {
             instance = null;
         }
+        instanceLock = instance;
         if (instance == null) {
-            if (!BrowserBridge.handOver(BrowserBridge.DEFAULT_PORT, List.of(args))) {
+            if (background) {
+                System.exit(0); // already running: a sign-in start has nothing to add
+                return;
+            }
+            if (!BrowserBridge.handOver(BrowserBridge.DEFAULT_PORT, List.of(urls))) {
                 JOptionPane.showMessageDialog(null, "velo is already running.", "velo",
                         JOptionPane.INFORMATION_MESSAGE);
             }
@@ -56,11 +71,7 @@ public final class App {
                     }));
             bridge.onActivate(() -> SwingUtilities.invokeLater(() -> {
                 if (window[0] != null) {
-                    if (window[0].getExtendedState() == Frame.ICONIFIED) {
-                        window[0].setExtendedState(Frame.NORMAL);
-                    }
-                    window[0].toFront();
-                    window[0].requestFocus();
+                    window[0].showWindow();
                 }
             }));
             bridgeStatus = "Browser integration on (127.0.0.1:" + bridge.port() + ")";
@@ -68,13 +79,36 @@ public final class App {
             bridgeStatus = "Browser integration off: port " + BrowserBridge.DEFAULT_PORT + " is in use";
         }
 
+        // The installed app starts with the system by default, like other download managers,
+        // so the browser always has velo to hand downloads to. Done once; Options can undo it.
+        if (!manager.autostartOffered() && System.getProperty("jpackage.app-path") != null) {
+            manager.setAutostartOffered(true);
+            Thread.ofPlatform().daemon().name("velo-autostart").start(() -> {
+                try {
+                    Startup.setEnabled(true);
+                } catch (IOException ignored) {
+                    // Options shows the real state; nothing to report at startup.
+                }
+            });
+        }
+
         String status = bridgeStatus;
         SwingUtilities.invokeLater(() -> {
             Theme.apply(manager.theme());
-            window[0] = new MainWindow(manager, status);
-            window[0].setVisible(true);
-            for (String url : args) {
-                window[0].route(url);
+            MainWindow w = new MainWindow(manager, status);
+            window[0] = w;
+            Tray tray = Tray.install(w::showWindow, manager::pauseAll, w::exitApp);
+            w.setTray(tray);
+            if (background && tray != null) {
+                // Stay in the tray; the browser bridge is already listening.
+            } else if (background) {
+                w.setExtendedState(Frame.ICONIFIED); // no tray on this desktop: start minimised
+                w.setVisible(true);
+            } else {
+                w.setVisible(true);
+            }
+            for (String url : urls) {
+                w.route(url);
             }
         });
     }

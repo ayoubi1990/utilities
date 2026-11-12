@@ -28,7 +28,8 @@
 - 🚀 **Faster downloads.** Each file downloads over up to 32 connections at once.
 - ⏸️ **Pause and resume anytime.** Even after closing velo or restarting your PC.
 - 🎬 **Video downloads.** Save videos from YouTube, Vimeo and 1000+ other sites in the quality you choose, from 144p to 4K, or as audio only.
-- 🌐 **Works with your browser.** A **Download this video** button appears on videos in Chrome and Edge.
+- 🌐 **Catches your browser's downloads.** Click a download link in Chrome or Edge and velo takes it over. Videos also get a **Download this video** button.
+- 🔔 **Always ready.** velo starts when you sign in and waits quietly in the tray (next to the clock).
 - 🗂️ **Stays tidy.** Files are sorted into Video, Music, Documents, Programs and more.
 - 🌙 **Light and dark themes.** Sharp on high-resolution screens.
 
@@ -40,6 +41,8 @@
 
 Start velo from the **Start menu** or the desktop icon. Everything it needs is included, so there's nothing else to install.
 
+From then on, velo starts by itself when you sign in and waits in the **tray** (the icons next to the clock). Closing its window keeps it there. To open it, double-click the tray icon; to quit, right-click the icon and choose **Exit**.
+
 ## 🎬 Download a video
 
 1. Open the video page in your browser and copy its address.
@@ -50,15 +53,21 @@ Start velo from the **Start menu** or the desktop icon. Everything it needs is i
   <img src="docs/images/video-quality.png" alt="Choose a video quality" width="640">
 </p>
 
-## 🌐 Add the browser button (optional)
+## 🌐 Connect your browser (recommended)
 
-With the browser button, you can download a video straight from the page.
+Once connected, velo catches your browser's downloads and adds a download button to videos.
 
 1. In Chrome or Edge, open `chrome://extensions` (or `edge://extensions`).
 2. Turn on **Developer mode** (top right).
 3. Click **Load unpacked** and choose this folder: `%LOCALAPPDATA%\velo\extension`. Paste that path into the folder box and press Enter.
+4. Optional: click the puzzle-piece icon and pin **velo integration** to the toolbar.
 
-Now hover over a video and click **Download this video**, or right-click any link and choose **Download with velo**. velo must be running, and it always asks before downloading anything.
+**What happens now:**
+
+- **Download links:** clicking one opens velo's download window instead of the browser saving the file.
+- **Videos:** hover over one and click **Download this video**, or right-click any link and choose **Download with velo**.
+- **Files the browser keeps:** small files (under 1 MB, such as "Save image as"), downloads in private windows, and everything whenever velo isn't running. Nothing is ever lost.
+- **Settings:** click the velo icon in the toolbar to see whether velo is running, to switch the takeover off, or to change the 1 MB limit.
 
 ## 📦 Other downloads
 
@@ -96,6 +105,12 @@ Into your **Downloads** folder, sorted into sub-folders such as `Video`, `Music`
 <summary><b>A video site stopped working. What can I do?</b></summary>
 
 Video sites change often. Use **Help → Update video support**, then try again. Protected streaming services (Netflix, Disney+ and similar) aren't supported.
+</details>
+
+<details>
+<summary><b>I don't want velo to start with Windows.</b></summary>
+
+Open **Downloads → Options** and untick **Start velo when I sign in**. On the same tab you can untick **Keep velo running in the tray** if you want the close button to quit velo. Without velo running, your browser saves downloads itself.
 </details>
 
 <details>

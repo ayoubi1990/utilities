@@ -164,7 +164,7 @@ final class MediaDialog extends JDialog {
 
     static Optional<Choice> show(Window owner, DownloadManager manager, String pageUrl, Map<String, String> headers) {
         MediaDialog d = new MediaDialog(owner, manager, pageUrl, headers);
-        d.setVisible(true);
+        Dialogs.popUp(d);
         return Optional.ofNullable(d.result);
     }
 

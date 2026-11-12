@@ -66,6 +66,9 @@ final class DownloadManager {
     private volatile Path defaultDir = Path.of(System.getProperty("user.home"), "Downloads");
     private volatile boolean showProgress = true;
     private volatile boolean showComplete = true;
+    private volatile boolean closeToTray = true;
+    private volatile boolean trayTipShown;
+    private volatile boolean autostartOffered;
 
     private DownloadManager(Path store) {
         this.store = store;
@@ -514,6 +517,36 @@ final class DownloadManager {
         persist();
     }
 
+    /** Closing the window keeps velo running in the tray (where there is one). */
+    boolean closeToTray() {
+        return closeToTray;
+    }
+
+    void setCloseToTray(boolean value) {
+        closeToTray = value;
+        persist();
+    }
+
+    /** The "still running in the tray" tip is shown once. */
+    boolean trayTipShown() {
+        return trayTipShown;
+    }
+
+    void setTrayTipShown(boolean value) {
+        trayTipShown = value;
+        persist();
+    }
+
+    /** Start-with-the-system is switched on once, on the installed app's first run. */
+    boolean autostartOffered() {
+        return autostartOffered;
+    }
+
+    void setAutostartOffered(boolean value) {
+        autostartOffered = value;
+        persist();
+    }
+
     boolean showComplete() {
         return showComplete;
     }
@@ -534,6 +567,9 @@ final class DownloadManager {
         p.setProperty("settings.dir", defaultDir.toString());
         p.setProperty("settings.showProgress", Boolean.toString(showProgress));
         p.setProperty("settings.showComplete", Boolean.toString(showComplete));
+        p.setProperty("settings.closeToTray", Boolean.toString(closeToTray));
+        p.setProperty("settings.trayTipShown", Boolean.toString(trayTipShown));
+        p.setProperty("settings.autostartOffered", Boolean.toString(autostartOffered));
         for (DownloadItem i : items) {
             String k = "item." + i.id + ".";
             p.setProperty(k + "url", i.url);
@@ -604,6 +640,9 @@ final class DownloadManager {
         defaultConnections = (int) parseLong(p.getProperty("settings.connections"), 8);
         showProgress = Boolean.parseBoolean(p.getProperty("settings.showProgress", "true"));
         showComplete = Boolean.parseBoolean(p.getProperty("settings.showComplete", "true"));
+        closeToTray = Boolean.parseBoolean(p.getProperty("settings.closeToTray", "true"));
+        trayTipShown = Boolean.parseBoolean(p.getProperty("settings.trayTipShown", "false"));
+        autostartOffered = Boolean.parseBoolean(p.getProperty("settings.autostartOffered", "false"));
         String dir = p.getProperty("settings.dir");
         if (dir != null) {
             defaultDir = Path.of(dir);

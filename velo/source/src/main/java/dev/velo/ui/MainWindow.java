@@ -69,6 +69,7 @@ final class MainWindow extends JFrame {
     private Predicate<DownloadItem> categoryFilter = i -> true;
     private JSplitPane split;
     private JComponent categories;
+    private Tray tray;
 
     private final List<Runnable> enablers = new ArrayList<>();
 
@@ -103,12 +104,45 @@ final class MainWindow extends JFrame {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                setTitle("velo — saving…");
-                Thread.ofPlatform().start(() -> {
-                    manager.shutdown();
-                    System.exit(0);
-                });
+                if (tray != null && manager.closeToTray()) {
+                    // Keep running so the browser can still hand downloads over.
+                    setVisible(false);
+                    if (!manager.trayTipShown()) {
+                        tray.notify("velo is still running",
+                                "It keeps catching your browser's downloads. Right-click this icon to exit.");
+                        manager.setTrayTipShown(true);
+                    }
+                } else {
+                    exitApp();
+                }
             }
+        });
+    }
+
+    /** Set once the tray icon exists; null where the desktop has no tray. */
+    void setTray(Tray tray) {
+        this.tray = tray;
+    }
+
+    /** Brings the window back from the tray or the taskbar. */
+    void showWindow() {
+        setVisible(true);
+        if (getExtendedState() == Frame.ICONIFIED) {
+            setExtendedState(Frame.NORMAL);
+        }
+        toFront();
+        requestFocus();
+    }
+
+    /** Pauses running downloads so they can resume, saves the list, and quits. */
+    void exitApp() {
+        setTitle("velo — saving…");
+        Thread.ofPlatform().start(() -> {
+            manager.shutdown();
+            if (tray != null) {
+                tray.remove();
+            }
+            System.exit(0);
         });
     }
 
@@ -124,7 +158,7 @@ final class MainWindow extends JFrame {
         tasks.add(item("Add from clipboard", Glyph.LINK, KeyStroke.getKeyStroke(KeyEvent.VK_V,
                 KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), this::addFromClipboard));
         tasks.addSeparator();
-        tasks.add(item("Exit", (char) 0, null, () -> dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING))));
+        tasks.add(item("Exit", (char) 0, null, this::exitApp));
 
         JMenu file = new JMenu("File");
         file.add(item("Open", Glyph.OPEN, null, () -> single(i -> CompleteDialog.openFile(i.path))));
@@ -413,10 +447,10 @@ final class MainWindow extends JFrame {
 
     /** Called (on the EDT) when the browser extension hands over a link. */
     void fromBrowser(BrowserBridge.Request r) {
-        if (getExtendedState() == Frame.ICONIFIED) {
-            setExtendedState(Frame.NORMAL);
+        // In the tray the window stays hidden: only the Download File Info dialog pops up, as in IDM.
+        if (isVisible()) {
+            showWindow();
         }
-        toFront();
         Map<String, String> headers = new LinkedHashMap<>();
         if (r.referrer() != null && !r.referrer().isBlank()) {
             headers.put("Referer", r.referrer());
@@ -683,6 +717,9 @@ final class MainWindow extends JFrame {
         String limit = manager.speedLimit() > 0 ? "   |   Speed limiter: " + Format.speed(manager.speedLimit()) : "";
         status.setText(all.size() + (all.size() == 1 ? " download" : " downloads") + "   |   " + running
                 + " active   |   " + Format.speed(speed) + limit);
+        if (tray != null) {
+            tray.tooltip(running == 0 ? "velo" : "velo: " + running + " downloading, " + Format.speed(speed));
+        }
     }
 
     private void updateButtons() {

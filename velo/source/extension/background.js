@@ -106,8 +106,72 @@ async function sendToVelo(url, pageUrl, title, fileName, mode) {
   }
 }
 
+// ---- take over the browser's own downloads (like IDM) ----
+
+const DEFAULTS = { capture: true, minSizeMB: 1 };
+
+async function settings() {
+  return { ...DEFAULTS, ...(await chrome.storage.local.get(Object.keys(DEFAULTS))) };
+}
+
+async function veloRunning() {
+  try {
+    const res = await fetch(`${VELO}/ping`, { signal: AbortSignal.timeout(1500) });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Decides whether velo takes a download, and if so hands it over and cancels the
+ * browser's copy. Anything uncertain stays with the browser, so no download is lost.
+ */
+async function takeOver(item) {
+  const s = await settings();
+  if (!s.capture || item.byExtensionId || item.incognito) return false;
+  const url = item.finalUrl || item.url;
+  if (!/^https?:/i.test(url)) return false; // blob:, data:, file: only the browser can fetch
+  const size = item.totalBytes > 0 ? item.totalBytes : item.fileSize;
+  if (size > 0 && size < s.minSizeMB * 1024 * 1024) return false;
+  if (!(await veloRunning())) return false;
+  const name = item.filename ? item.filename.split(/[\\/]/).pop() : null;
+  const result = await sendToVelo(url, item.referrer || "", "", name, "file");
+  if (!result.ok) return false;
+  try {
+    await chrome.downloads.cancel(item.id);
+    await chrome.downloads.erase({ id: item.id });
+  } catch (e) {
+    // Already gone; velo has it either way.
+  }
+  return true;
+}
+
+// Fires once the browser knows the file's name and size, before it saves anything.
+// Answering asynchronously holds the download while velo is asked.
+chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
+  takeOver(item)
+    .then((taken) => {
+      if (!taken) suggest();
+    })
+    .catch(() => suggest());
+  return true;
+});
+
+async function updateBadge() {
+  const s = await settings();
+  await chrome.action.setBadgeText({ text: s.capture ? "" : "off" });
+  await chrome.action.setBadgeBackgroundColor({ color: "#6b7280" });
+}
+chrome.storage.onChanged.addListener(updateBadge);
+chrome.runtime.onStartup.addListener(updateBadge);
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const tabId = sender.tab ? sender.tab.id : -1;
+  if (msg.type === "velo-status") {
+    veloRunning().then((running) => sendResponse({ running }));
+    return true;
+  }
   if (msg.type === "velo-get-media") {
     getMedia(tabId).then(sendResponse, () => sendResponse([]));
     return true;
@@ -122,6 +186,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 // ---- right-click menu ----
 
 chrome.runtime.onInstalled.addListener(() => {
+  updateBadge();
   chrome.contextMenus.create({
     id: "velo-download",
     title: "Download with velo",

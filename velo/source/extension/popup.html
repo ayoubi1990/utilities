@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; width: 280px; font: 13px "Segoe UI", system-ui, sans-serif; color: #1f2328; background: #fff; }
+    @media (prefers-color-scheme: dark) { body { color: #e6e6e6; background: #202124; } .muted { color: #9aa0a6 !important; } }
+    header { display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px; }
+    header img { width: 28px; height: 28px; }
+    header b { font-size: 15px; }
+    .status { margin: 0 14px 10px; padding: 7px 10px; border-radius: 6px; font-size: 12px; }
+    .on { background: #e6f4ea; color: #1e6b34; }
+    .off { background: #fdf3e1; color: #8a5a00; }
+    @media (prefers-color-scheme: dark) { .on { background: #1d3325; color: #8fd6a2; } .off { background: #3a2f17; color: #f0c674; } }
+    label { display: flex; align-items: center; gap: 8px; padding: 6px 14px; cursor: pointer; }
+    .row { padding: 6px 14px 12px; display: flex; align-items: center; gap: 6px; }
+    input[type=number] { width: 52px; }
+    .muted { color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header><img src="icons/icon32.png" alt=""><b>velo</b></header>
+  <div id="status" class="status">Checking for velo…</div>
+  <label><input type="checkbox" id="capture"> Send browser downloads to velo</label>
+  <div class="row muted">
+    Leave files under <input type="number" id="minSize" min="0" step="1"> MB to the browser
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

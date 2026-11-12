@@ -91,6 +91,20 @@ public final class UiTests {
                     .toAbsolutePath().resolve("Big Buck Bunny [aqz].mp4");
             eq(CompleteDialog.explorerSelect(p), List.of("explorer.exe", "/select,", p.toString()));
         });
+        test("start-with-system entries are quoted correctly", () -> {
+            List<String> cmd = List.of("C:\\Users\\Jo Doe\\AppData\\Local\\velo\\velo.exe", "--background");
+            String line = Startup.commandLine(cmd);
+            eq(line, "\"C:\\Users\\Jo Doe\\AppData\\Local\\velo\\velo.exe\" --background");
+            String reg = Startup.regFile(line);
+            check(reg.startsWith("Windows Registry Editor Version 5.00\r\n"), reg);
+            check(reg.contains("\"velo\"=\"\\\"C:\\\\Users\\\\Jo Doe\\\\AppData\\\\Local\\\\velo\\\\velo.exe\\\" --background\""),
+                    reg);
+            check(Startup.regFile(null).contains("\"velo\"=-"), "removal entry");
+            String desktop = Startup.desktopEntry(List.of("/opt/velo/bin/velo", "--background"));
+            check(desktop.contains("Exec=/opt/velo/bin/velo --background\n"), desktop);
+            check(Startup.desktopEntry(List.of("/home/a b/velo", "--background")).contains("Exec=\"/home/a b/velo\""),
+                    "paths with spaces are quoted");
+        });
         test("categories by extension", () -> {
             eq(DownloadItem.Type.of("movie.MKV"), DownloadItem.Type.VIDEO);
             eq(DownloadItem.Type.of("setup.exe"), DownloadItem.Type.PROGRAMS);

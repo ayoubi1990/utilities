@@ -77,6 +77,26 @@ final class Dialogs {
         return p;
     }
 
+    /**
+     * Shows a modal dialog in front of whatever the person is using (usually the browser that
+     * handed over a download): pinned on top until it has opened, so Windows' focus rules for
+     * background apps do not leave it behind other windows.
+     */
+    static void popUp(JDialog d) {
+        d.setAlwaysOnTop(true);
+        d.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                d.toFront();
+                d.requestFocus();
+                javax.swing.Timer release = new javax.swing.Timer(600, ev -> d.setAlwaysOnTop(false));
+                release.setRepeats(false);
+                release.start();
+            }
+        });
+        d.setVisible(true);
+    }
+
     static void escapeCloses(JDialog d) {
         d.getRootPane().registerKeyboardAction(e -> d.dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);

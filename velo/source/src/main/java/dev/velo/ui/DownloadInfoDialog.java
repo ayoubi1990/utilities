@@ -130,8 +130,7 @@ final class DownloadInfoDialog extends JDialog {
     static Optional<DownloadManager.Request> show(Window owner, DownloadManager manager, String url,
             String suggestedName, String description, Map<String, String> headers) {
         DownloadInfoDialog d = new DownloadInfoDialog(owner, manager, url, suggestedName, description, headers);
-        d.toFront();
-        d.setVisible(true);
+        Dialogs.popUp(d);
         return Optional.ofNullable(d.result);
     }
 
